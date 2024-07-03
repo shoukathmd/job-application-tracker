@@ -32,3 +32,73 @@ export async function createJobAction(
     return null;
   }
 }
+
+type GetAllJobsActionTypes = {
+  search?: string;
+  jobStatus?: string;
+  page?: number;
+  limit?: number;
+};
+
+export async function getAllJobsAction({
+  search,
+  jobStatus,
+  page = 1,
+  limit = 10,
+}: GetAllJobsActionTypes): Promise<{
+  jobs: JobType[];
+  count: number;
+  page: number;
+  totalPages: number;
+}> {
+  try {
+    let whereClause: Prisma.JobWhereInput = {};
+    if (search) {
+      whereClause = {
+        ...whereClause,
+        OR: [
+          {
+            position: {
+              contains: search,
+            },
+          },
+          {
+            company: {
+              contains: search,
+            },
+          },
+        ],
+      };
+    }
+    if (jobStatus && jobStatus !== "all") {
+      whereClause = {
+        ...whereClause,
+        status: jobStatus,
+      };
+    }
+
+    const jobs: JobType[] = await prisma.job.findMany({
+      where: whereClause,
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return { jobs, count: 0, page: 1, totalPages: 0 };
+  } catch (error) {
+    console.error(error);
+    return { jobs: [], count: 0, page: 1, totalPages: 0 };
+  }
+}
+
+export async function deleteJobAction(id: string): Promise<JobType | null> {
+  try {
+    const job: JobType = await prisma.job.delete({
+      where: {
+        id,
+      },
+    });
+    return job;
+  } catch (error) {
+    return null;
+  }
+}
