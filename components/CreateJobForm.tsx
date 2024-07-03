@@ -48,7 +48,7 @@ function CreateJobForm() {
       queryClient.invalidateQueries({ queryKey: ["stats"] });
       queryClient.invalidateQueries({ queryKey: ["charts"] });
 
-      router.pust("/jobs");
+      router.push("/jobs");
     },
   });
 
