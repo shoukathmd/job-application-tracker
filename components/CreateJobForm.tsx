@@ -9,11 +9,14 @@ import {
   createAndEditJobSchema,
   CreateAndEditJobType,
 } from "@/utils/types";
-
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 
 import { CustomFormField, CustomFormSelect } from "./FormComponents";
+import { useToast } from "./ui/use-toast";
+import { useRouter } from "next/navigation";
+import { createJobAction } from "@/utils/actions";
 
 function CreateJobForm() {
   // 1. Define your form.
@@ -28,10 +31,32 @@ function CreateJobForm() {
     },
   });
 
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const router = useRouter();
+  const { mutate, isPending } = useMutation({
+    mutationFn: (values: CreateAndEditJobType) => createJobAction(values),
+    onSuccess: (data) => {
+      if (!data) {
+        toast({
+          description: "Error saving dataThere",
+        });
+        return;
+      }
+      toast({ description: "Job created" });
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["stats"] });
+      queryClient.invalidateQueries({ queryKey: ["charts"] });
+
+      router.pust("/jobs");
+    },
+  });
+
   function onSubmit(values: CreateAndEditJobType) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     console.log(values);
+    mutate(values);
   }
 
   return (
@@ -64,8 +89,12 @@ function CreateJobForm() {
             items={Object.values(JobMode)}
           />
 
-          <Button type="submit" className="self-end capitalize">
-            create job
+          <Button
+            type="submit"
+            className="self-end capitalize"
+            disabled={isPending}
+          >
+            {isPending ? "Loading..." : "Create job"}
           </Button>
         </div>
       </form>
