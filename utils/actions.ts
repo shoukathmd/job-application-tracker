@@ -102,3 +102,40 @@ export async function deleteJobAction(id: string): Promise<JobType | null> {
     return null;
   }
 }
+
+export async function getSingleJobAction(id: string): Promise<JobType | null> {
+  let job: JobType | null = null;
+
+  try {
+    job = await prisma.job.findUnique({
+      where: {
+        id,
+      },
+    });
+  } catch (error) {
+    job = null;
+  }
+  if (!job) {
+    redirect("/jobs");
+  }
+  return job;
+}
+
+export async function updateJobAction(
+  id: string,
+  values: CreateAndEditJobType
+): Promise<JobType | null> {
+  try {
+    const job: JobType = await prisma.job.update({
+      where: {
+        id,
+      },
+      data: {
+        ...values,
+      },
+    });
+    return job;
+  } catch (error) {
+    return null;
+  }
+}
