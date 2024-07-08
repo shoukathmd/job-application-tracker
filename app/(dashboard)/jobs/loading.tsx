@@ -6,6 +6,7 @@ function loading() {
       <Skeleton className="h-10" />
       <Skeleton className="h-10 " />
       <Skeleton className="h-10 " />
+      <Skeleton className="h-10 " />
     </div>
   );
 }
